@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% block title %}{{ view.title }}{% endblock %}
+
+{% block content %}
+<section class="page-head">
+  <div>
+    <h1>Welcome back, {{ user_name }}</h1>
+    <p class="text-muted mb-0">Organize your work and achieve your goals.</p>
+  </div>
+  <button class="btn btn-accent" type="button" id="addTaskBtn">
+    <i class="bi bi-plus-lg" aria-hidden="true"></i> Add New Task
+  </button>
+</section>
+
+<section class="stats-grid" aria-label="Task summary">
+  <div class="stat-card">
+    <span class="stat-icon tone-slate"><i class="bi bi-collection" aria-hidden="true"></i></span>
+    <div><div class="stat-value" data-stat="total">-</div><div class="stat-label">Total tasks</div></div>
+  </div>
+  <div class="stat-card">
+    <span class="stat-icon tone-amber"><i class="bi bi-hourglass-split" aria-hidden="true"></i></span>
+    <div><div class="stat-value" data-stat="todo">-</div><div class="stat-label">Pending (to do)</div></div>
+  </div>
+  <div class="stat-card">
+    <span class="stat-icon tone-blue"><i class="bi bi-arrow-repeat" aria-hidden="true"></i></span>
+    <div><div class="stat-value" data-stat="in_progress">-</div><div class="stat-label">In progress</div></div>
+  </div>
+  <div class="stat-card">
+    <span class="stat-icon tone-green"><i class="bi bi-check2-circle" aria-hidden="true"></i></span>
+    <div><div class="stat-value" data-stat="completed">-</div><div class="stat-label">Completed</div></div>
+  </div>
+</section>
+
+<section class="progress-card" aria-label="Completion progress">
+  <div class="d-flex justify-content-between align-items-end mb-2 flex-wrap gap-2">
+    <div>
+      <h2 class="h6 mb-1">Completion progress</h2>
+      <span class="text-muted small" id="progressText">Loading...</span>
+    </div>
+    <div class="d-flex align-items-center gap-3">
+      <span class="overdue-chip d-none" id="overdueChip"><i class="bi bi-exclamation-circle" aria-hidden="true"></i> <span id="overdueCount">0</span> overdue</span>
+      <span class="progress-percent" id="progressPercent">0%</span>
+    </div>
+  </div>
+  <div class="progress" role="progressbar" aria-label="Percent of tasks completed" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progressBar">
+    <div class="progress-bar" id="progressFill" style="width:0%"></div>
+  </div>
+</section>
+
+<section class="toolbar" aria-label="Search and filters">
+  <div class="search-box">
+    <i class="bi bi-search" aria-hidden="true"></i>
+    <label for="searchInput" class="visually-hidden">Search tasks</label>
+    <input type="search" id="searchInput" class="form-control" placeholder="Search by title or description">
+  </div>
+  <div class="filter-group">
+    <label for="filterStatus" class="visually-hidden">Filter by status</label>
+    <select id="filterStatus" class="form-select">
+      <option value="">All statuses</option>
+      {% for value, label in statuses %}<option value="{{ value }}">{{ label }}</option>{% endfor %}
+    </select>
+    <label for="filterPriority" class="visually-hidden">Filter by priority</label>
+    <select id="filterPriority" class="form-select">
+      <option value="">All priorities</option>
+      {% for value, label in priorities %}<option value="{{ value }}">{{ label }}</option>{% endfor %}
+    </select>
+    <label for="filterDue" class="visually-hidden">Filter by due date</label>
+    <select id="filterDue" class="form-select">
+      <option value="">Any due date</option>
+      <option value="overdue">Overdue</option>
+      <option value="today">Due today</option>
+      <option value="week">Due in 7 days</option>
+      <option value="none">No due date</option>
+    </select>
+    <label for="sortBy" class="visually-hidden">Sort tasks</label>
+    <select id="sortBy" class="form-select">
+      <option value="created_desc">Newest first</option>
+      <option value="created_asc">Oldest first</option>
+      <option value="due_asc">Due date: soonest</option>
+      <option value="due_desc">Due date: latest</option>
+    </select>
+  </div>
+</section>
+
+<div class="list-head">
+  <h2 class="h5 mb-0">{{ view.title }}</h2>
+  <span class="text-muted small" id="resultCount" aria-live="polite"></span>
+</div>
+
+<section id="taskGrid" class="task-grid" aria-busy="true"
+         data-view="{{ active_view }}" data-preset-status="{{ view.status }}" data-preset-priority="{{ view.priority }}"></section>
+
+<section id="emptyState" class="empty-state d-none">
+  <div class="empty-icon"><i class="bi bi-inbox" aria-hidden="true"></i></div>
+  <h2 class="h5" id="emptyTitle">No tasks yet</h2>
+  <p class="text-muted mb-3" id="emptyText">Add your first task to start tracking your work.</p>
+  <button class="btn btn-accent" type="button" id="emptyAction">Add your first task</button>
+</section>
+
+<!-- Add / edit modal -->
+<div class="modal fade" id="taskModal" tabindex="-1" aria-labelledby="taskModalTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title h5" id="taskModalTitle">Add new task</h2>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">{% include "task_form.html" %}</div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+        <button type="submit" form="taskForm" class="btn btn-accent" id="saveTaskBtn">
+          <span class="spinner-border spinner-border-sm d-none" aria-hidden="true"></span>
+          <span class="btn-label">Add task</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete confirmation -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content">
+      <div class="modal-body text-center p-4">
+        <div class="delete-icon"><i class="bi bi-trash3" aria-hidden="true"></i></div>
+        <h2 class="h5" id="deleteModalTitle">Delete this task?</h2>
+        <p class="text-muted small mb-4">"<span id="deleteTaskName"></span>" will be removed permanently.</p>
+        <div class="d-flex gap-2 justify-content-center">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Keep task</button>
+          <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
+            <span class="spinner-border spinner-border-sm d-none" aria-hidden="true"></span>
+            <span class="btn-label">Delete task</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

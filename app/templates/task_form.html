@@ -1,0 +1,37 @@
+{# Partial: the add/edit form. Included inside the task modal in dashboard.html. #}
+<form id="taskForm" novalidate>
+  <input type="hidden" id="taskId">
+  <div class="mb-3">
+    <label for="taskTitle" class="form-label">Title</label>
+    <input type="text" class="form-control" id="taskTitle" name="title" maxlength="120" required
+           placeholder="e.g. Finish Docker lab report" aria-describedby="err-title">
+    <div class="invalid-feedback" id="err-title"></div>
+  </div>
+  <div class="mb-3">
+    <label for="taskDescription" class="form-label">Description <span class="text-muted fw-normal">(optional)</span></label>
+    <textarea class="form-control" id="taskDescription" name="description" rows="3" maxlength="1000"
+              placeholder="Add any details you want to remember" aria-describedby="err-description"></textarea>
+    <div class="invalid-feedback" id="err-description"></div>
+  </div>
+  <div class="row g-3">
+    <div class="col-sm-4">
+      <label for="taskStatus" class="form-label">Status</label>
+      <select class="form-select" id="taskStatus" name="status" aria-describedby="err-status">
+        {% for value, label in statuses %}<option value="{{ value }}">{{ label }}</option>{% endfor %}
+      </select>
+      <div class="invalid-feedback" id="err-status"></div>
+    </div>
+    <div class="col-sm-4">
+      <label for="taskPriority" class="form-label">Priority</label>
+      <select class="form-select" id="taskPriority" name="priority" aria-describedby="err-priority">
+        {% for value, label in priorities %}<option value="{{ value }}" {{ 'selected' if value == 'medium' }}>{{ label }}</option>{% endfor %}
+      </select>
+      <div class="invalid-feedback" id="err-priority"></div>
+    </div>
+    <div class="col-sm-4">
+      <label for="taskDue" class="form-label">Due date</label>
+      <input type="date" class="form-control" id="taskDue" name="due_date" aria-describedby="err-due_date">
+      <div class="invalid-feedback" id="err-due_date"></div>
+    </div>
+  </div>
+</form>

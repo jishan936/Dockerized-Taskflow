@@ -1,0 +1,40 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - taskflow_pgdata:/var/lib/postgresql/data   # named volume = data survives container removal
+    networks:
+      - taskflow-net
+    # No "ports:" here on purpose: only the web container can reach the database.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  web:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      POSTGRES_HOST: db        # the Compose service name is the hostname on the Docker network
+      POSTGRES_PORT: "5432"
+    ports:
+      - "${APP_PORT:-5000}:5000"   # host port : container port
+    depends_on:
+      db:
+        condition: service_healthy   # start Flask only after PostgreSQL is ready
+    networks:
+      - taskflow-net
+
+networks:
+  taskflow-net:
+
+volumes:
+  taskflow_pgdata:

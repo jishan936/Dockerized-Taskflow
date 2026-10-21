@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Settings & About{% endblock %}
+
+{% block content %}
+<section class="page-head">
+  <div>
+    <h1>Settings &amp; About</h1>
+    <p class="text-muted mb-0">How TaskFlow is built and how it runs.</p>
+  </div>
+</section>
+
+<div class="about-grid">
+  <section class="panel">
+    <h2 class="h5">What is TaskFlow?</h2>
+    <p>TaskFlow is a task manager built as a Docker learning project. Every task and every number on the dashboard comes from a PostgreSQL database.</p>
+    <p class="mb-0">There is a single user and no login. The name in the welcome heading comes from the <code>APP_USER_NAME</code> setting in your <code>.env</code> file.</p>
+  </section>
+
+  <section class="panel">
+    <h2 class="h5">Technology stack</h2>
+    <ul class="stack-list">
+      <li><i class="bi bi-filetype-html" aria-hidden="true"></i> HTML, CSS, JavaScript and Bootstrap 5</li>
+      <li><i class="bi bi-filetype-py" aria-hidden="true"></i> Python Flask with Flask-SQLAlchemy</li>
+      <li><i class="bi bi-database" aria-hidden="true"></i> PostgreSQL 16</li>
+      <li><i class="bi bi-box-seam" aria-hidden="true"></i> Docker and Docker Compose</li>
+      <li><i class="bi bi-github" aria-hidden="true"></i> Git, GitHub and GitHub Actions</li>
+      <li><i class="bi bi-bug" aria-hidden="true"></i> Pytest</li>
+    </ul>
+  </section>
+
+  <section class="panel">
+    <h2 class="h5">How a request travels</h2>
+    <ol class="mb-0">
+      <li>The browser sends a request to Flask on port 5000.</li>
+      <li>Gunicorn passes it to a Flask route, which validates the data.</li>
+      <li>SQLAlchemy sends SQL to the <code>db</code> container over the Docker network.</li>
+      <li>PostgreSQL stores the data in a named volume, so it survives restarts.</li>
+    </ol>
+  </section>
+
+  <section class="panel">
+    <h2 class="h5">Settings</h2>
+    <p class="mb-2">Configuration lives in environment variables, not in the code:</p>
+    <ul class="mb-0">
+      <li><code>SECRET_KEY</code> for Flask security</li>
+      <li><code>POSTGRES_*</code> for database credentials</li>
+      <li><code>APP_USER_NAME</code> and <code>APP_PORT</code> for the app</li>
+    </ul>
+  </section>
+</div>
+{% endblock %}
